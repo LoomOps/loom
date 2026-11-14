@@ -11,3 +11,5 @@
 - [Installation, overrides, updates and rollback](UPDATES.md)
 
 Historical research contracts and validation policies are archived outside the product repository. Read current Job input and metadata contracts from the running server's `system.contract` and `system.describe`.
+
+- [Rust variant review and block-by-block transition proposal](rust-port/README.md) (planning only; no deployment).
