@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.0-alpha.59
+
+- Unify the Runtimes sidebar, tab and badges with a shared layered icon, distinct from Models and Docker.
+- Use a shared multi-tool icon for Tools, distinct from Troubleshooting and terminal commands.
+
 ## 0.1.0-alpha.58
 
 - Namespace installation smoke Components by build so post-upgrade acceptance does not collide with immutable earlier smoke registrations or reuse a previous build's execution receipt.

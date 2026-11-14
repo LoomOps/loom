@@ -3,14 +3,14 @@ const loomProfileUsage=p=>catalogData.presentation_view==='research'&&p.research
 const loomExtensionTypes={
  execution_profile:{label:'Profile',icon:'workflow',role:'Execution combination',description:''},
  component:{label:'Component',icon:'blocks',role:'Job lifecycle',description:''},
- tool:{label:'Tool',icon:'square-terminal',role:'Research software',description:''},
- runtime:{label:'Runtime',icon:'box',role:'Runtime',description:''}
+ tool:{label:'Tool',icon:loomToolIcon,role:'Research software',description:''},
+ runtime:{label:'Runtime',icon:loomRuntimeIcon,role:'Runtime',description:''}
 };
 const loomHubPages={profiles:'Profiles',components:'Components',tools:'Tools',runtimes:'Runtimes'};
 function loomIsHubPage(page){return Object.hasOwn(loomHubPages,page);}
 function loomHubTabs(){
  const context=state.hubContext&&catEntity(state.hubContext),p=context?.loom_execution_profile;
- return `<nav class="pa-hub-tabs" aria-label="Runtimes">${Object.entries(loomHubPages).map(([page,label])=>`<button data-hub-page="${page}" aria-current="${state.page===page?'page':'false'}">${icon(({profiles:'workflow',components:'blocks',tools:'square-terminal',runtimes:'box'})[page])}${label}</button>`).join('')}</nav>`+(p&&state.entity!==context.id?`<div class="pa-hub-context">${catLink(context.id,loomProfileName(p))}<span>› ${esc(loomHubPages[state.page])}</span></div>`:'');
+ return `<nav class="pa-hub-tabs" aria-label="Runtimes">${Object.entries(loomHubPages).map(([page,label])=>`<button data-hub-page="${page}" aria-current="${state.page===page?'page':'false'}">${icon(({profiles:'workflow',components:'blocks',tools:loomToolIcon,runtimes:loomRuntimeIcon})[page])}${label}</button>`).join('')}</nav>`+(p&&state.entity!==context.id?`<div class="pa-hub-context">${catLink(context.id,loomProfileName(p))}<span>› ${esc(loomHubPages[state.page])}</span></div>`:'');
 }
 function loomHubNavigate(next){
  const pane=activePane(),tab=activeTab(),current=catEntity(state.entity);

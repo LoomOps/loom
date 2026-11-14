@@ -1,3 +1,6 @@
+const loomRuntimeIcon = 'layers-3';
+const loomToolIcon = 'pocket-knife';
+
 // Lucide's document scan must not replace already-rendered SVGs on data refresh.
 function loomCreateIcons(options) {
   const existing=[...document.querySelectorAll('svg[data-lucide]')].map(node=>[node,node.getAttribute('data-lucide')]);

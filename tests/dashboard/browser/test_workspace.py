@@ -231,7 +231,7 @@ const done=arguments[arguments.length-1];
 
     def test_software_inventory_filters_and_distinct_navigation_icon(self):
         tool_id,component_id=self.software_fixture();ui=self.ui
-        self.assertTrue(ui.js("return !!document.querySelector('[data-hub-page=tools] svg[data-lucide=square-terminal]') && !!document.querySelector('[data-go=issues] svg[data-lucide=wrench]')"))
+        self.assertTrue(ui.js("return !!document.querySelector('[data-hub-page=tools] svg[data-lucide=pocket-knife]') && !!document.querySelector('[data-go=issues] svg[data-lucide=wrench]')"))
         ui.nav('Tools')
         self.assertEqual(ui.js("return document.querySelectorAll('[data-extension-card]').length"),2)
         ui.js("const f=document.querySelector('[data-extension-owner]');f.value='owner';f.dispatchEvent(new Event('change',{bubbles:true}))")
