@@ -247,6 +247,10 @@ def projection(db, actor, config, local, bulk=None):
         entities.append({'id':'runtime:'+item['id']+':'+str(item['revision'] or 'legacy'),'kind':'runtime',
             'namespace':'loom','label':manifest.get('label',item['id']),'summary':manifest.get('description',''),
             'loom_runtime':item,'properties':{'revision':item['revision']},'relations':[],'artifacts':[]})
+    for item in runtimes['dependency_catalog']['dependencies']:
+        entities.append({'id':'dependency:'+item['id'],'kind':'dependency','namespace':'loom',
+            'label':item['label'],'summary':'','loom_dependency':item,
+            'properties':{'category':item['category']},'relations':[],'artifacts':[]})
     import research
     research.decorate(db,entities)
     for entity in entities:

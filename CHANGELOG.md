@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.0-alpha.60
+
+- Add a Dependencies catalog within Runtimes, grouped into major software categories with search, exact versions, recorded origins and consuming Runtime/Profile links.
+- Expose grant-scoped dependency discovery/detail through MCP without promoting transitive package inventories or rewriting installed Runtime/Job pins.
+- Support optional validated dependency catalog/category display metadata in administrator recipes; retain configured installation directories and existing recipes.
+
 ## 0.1.0-alpha.59
 
 - Unify the Runtimes sidebar, tab and badges with a shared layered icon, distinct from Models and Docker.

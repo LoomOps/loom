@@ -81,6 +81,9 @@ def register(root, identity, manifest, instances):
 
 
 def validate_highlights(manifest):
+    for dep in manifest.get('dependencies') or []:
+        if 'catalog' in dep and type(dep['catalog']) is not bool:raise ValueError('Dependency catalog must be a boolean')
+        if 'category' in dep and dep['category'] not in ('languages','simulation','machine-learning','gpu','libraries'):raise ValueError('Unknown dependency category')
     selectors=manifest.get('primary_dependencies',[])
     if not isinstance(selectors,list) or len(selectors)>8:raise ValueError('Select at most eight representative dependencies')
     for selector in selectors:

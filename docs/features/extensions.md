@@ -176,3 +176,25 @@ Managed-directory provenance comes from canonical paths on the host using the
 configured root; image/host/external origins are separate and old unrecorded
 origins remain unclassified. No directory cleanup, package installation, GPU
 execution or operational migration follows from display curation or inspection.
+
+## Dependency catalog
+
+`ops/dependency_catalog.py` derives a read-only, instance-grant-scoped catalog from
+Runtime manifests. Software units are selected by representative selectors,
+recognized interpreter/framework names or optional dependency `catalog`/`category`
+metadata. Explicit exclusion and deprecated entries remain excluded. The five
+categories group major units; transitive package inventory is not promoted by
+default. No host filesystem discovery, installation write or Job admission rule is
+added. No paths are inferred from the platform's default dependency directory.
+
+`components.dependencies` lists current Runtime observations. `get_dependency`
+includes granted historical revisions. Identity groups normalized dependency names;
+versions and recorded image/directory origins remain distinct. If declarations
+conflict, classification follows the documented category order rather than iteration
+order; manifests remain available on each exact Runtime. A shared version is never
+proof of one physical installation or of actual scientific use. Missing origins
+remain unrecorded. Existing manifests require no rewrite; new recipe display fields
+are validated before build/registration and preserved in immutable evidence.
+
+Tests cover large inventories, explicit classification/exclusion, version/scope
+ambiguity, history, grants, read-only discovery and custom installation roots.

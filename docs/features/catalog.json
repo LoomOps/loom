@@ -355,7 +355,8 @@
         "executor/runtime_store.py",
         "ops/profile_inventory.py",
         "ops/software_metadata.py",
-        "ops/runtime_hub.py"
+        "ops/runtime_hub.py",
+        "ops/dependency_catalog.py"
       ],
       "tests": [
         "tests/ops/test_components_platform.py",
@@ -363,7 +364,8 @@
         "tests/ops/test_research_tools.py",
         "tests/ops/test_runtime_catalog.py",
         "tests/ops/test_profile_inventory.py",
-        "tests/ops/test_runtime_hub.py"
+        "tests/ops/test_runtime_hub.py",
+        "tests/ops/test_dependency_catalog.py"
       ],
       "depends_on": [
         "identity"
@@ -568,7 +570,8 @@
         "dashboard/workspace/template.html",
         "dashboard/workspace/text-preview.js",
         "dashboard/workspace/job-activity.js",
-        "dashboard/workspace/research.js"
+        "dashboard/workspace/research.js",
+        "dashboard/workspace/dependencies.js"
       ],
       "tests": [
         "tests/dashboard/test_proxy.py",

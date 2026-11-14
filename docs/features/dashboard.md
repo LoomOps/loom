@@ -258,3 +258,12 @@ even when that Job uses another Profile kind. They increase recorded-execution
 counts, not the number of independent Jobs/reuses. Profile details retain source
 record links alongside the canonical Job link; consolidation must not make an
 actually used Profile appear unused.
+
+The Runtimes workspace also provides a Dependencies tab, grouped by major software
+category. One software-unit card links versions and consuming Runtime revisions;
+detail preserves each recorded image/directory origin and related Profiles. Search
+and category filters operate on major units, while full transitive inventories stay
+collapsed under Runtime details. No explanatory boilerplate is added to the list.
+The UI does not claim discovery of unregistered dependency-directory contents.
+Firefox regression covers filters, versions, escaped paths, Runtime navigation and
+light/dark layouts at 1440px and 500px.

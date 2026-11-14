@@ -30,8 +30,8 @@ class Workspace:
                      return true;""", selector)
 
     def nav(self, name):
-        if name in ('Profiles','Components','Tools','Runtimes'):
-            page={'Profiles':'profiles','Components':'components','Tools':'tools','Runtimes':'runtimes'}[name]
+        if name in ('Profiles','Components','Tools','Runtimes','Dependencies'):
+            page={'Profiles':'profiles','Components':'components','Tools':'tools','Runtimes':'runtimes','Dependencies':'dependencies'}[name]
             if not self.js("return !!document.querySelector('[data-hub-page]')"):
                 self.click('#pa-nav [data-go=profiles]')
             self.click('[data-hub-page="'+page+'"]')

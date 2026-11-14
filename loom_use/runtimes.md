@@ -12,8 +12,25 @@ Call `components.runtimes` and `components.get_runtime` using the live schemas f
 `system.describe`. Discovery returns only this executor instance's grants, exact
 dependencies, recorded validation scope and consuming Profiles/Jobs. Installation
 attempts report staging/building/validating/ready/failed independently of Jobs. Dashboard
-Runtimes groups Profiles, Components, Tools and Runtimes with the same evidence and relationships.
+Runtimes groups Profiles, Components, Tools, Runtimes and Dependencies with the same evidence and relationships.
 `GET /api/runtimes` exposes the same authenticated read operation.
+
+The Dependencies tab and `components.dependencies` provide a separate, read-only
+catalog of representative software units across the instance's current granted
+Runtimes. Categories are Languages, Simulation, Machine Learning, GPU & Drivers,
+and Libraries & Tools. `components.get_dependency` retains exact recorded versions,
+origins and Runtime references, including granted historical revisions. Different
+images or directories remain separate installation origins even when versions match.
+The full transitive package inventory remains in each Runtime's collapsed inventory.
+Neither this catalog nor membership in an image proves a package was executed.
+Unregistered files in the configured dependency directory are not discovered here.
+
+New recipe dependency entries may optionally declare `catalog: true` and `category`
+(`languages`, `simulation`, `machine-learning`, `gpu`, or `libraries`). Use these for
+major software units; `catalog: false` excludes an inventory entry. Existing recipes
+work unchanged: representative selectors and recognized frameworks/interpreters are
+included automatically. These are display metadata, not installation paths, solver
+rules or permission grants. Existing immutable revisions and Job pins are preserved.
 
 Use `runtime_ref: {"id":"simulation","revision":1}` instead of `runtime_id` or
 `image` in a Profile runner. Loom assigns its hash/image/dependency pin. Callers

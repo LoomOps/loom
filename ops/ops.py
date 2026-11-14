@@ -831,6 +831,8 @@ TOOLS = {
     'annotate_software': ('submit', {}),
     'runtime_list': ('read', {}),
     'runtime_get': ('read', {'id':'string','revision':'integer'}),
+    'dependency_list': ('read', {}),
+    'dependency_get': ('read', {'id':'string'}),
     'list_users': ('read', {}),
     'assign_job_owner': ('submit', {'id':'string','owner':'string'}),
     'assign_entity_owner': ('submit', {'id':'string','owner':'string'}),
@@ -972,9 +974,15 @@ def operate(name, args, actor, config):
     if name == 'release_status':return release_updates.status()
     if name == 'check_releases':return release_updates.request()
     with db() as c:
-        if name in ('runtime_list','runtime_get'):
+        if name in ('runtime_list','runtime_get','dependency_list','dependency_get'):
             import runtime_catalog
             result=runtime_catalog.inventory(c,config)
+            if name=='dependency_list':return result['dependency_catalog']
+            if name=='dependency_get':
+                import dependency_catalog
+                for item in dependency_catalog.listing(result,history=True)['dependencies']:
+                    if item['id']==args['id']:return item
+                raise ValueError('Dependency unavailable or outside instance grant')
             if name=='runtime_list':return result
             for item in result['runtimes']:
                 if (item['id'],item['revision'])==(args['id'],args['revision']):

@@ -132,7 +132,10 @@ def inventory(db,config,catalog=None):
         item['used_by_jobs']=[identity for identity,profile in jobs if stages(profile)]
         item['executed_jobs']=sorted({links.get(identity,identity) for identity,profile in jobs if identity in started and any(exact(profile.get(s,{}),item,proof=True) for s in ('runtime','prepare','finalize','on_complete','on_error','on_cancel'))})
         item['usage_stats']={'configured_profiles':len(item['used_by_profiles']),'associated_records':len(item['used_by_jobs']),'executed_jobs':len(item['executed_jobs']),'basis':'exact_runtime_revision_started_attempts'}
-    return decorate(db,config,catalog)
+    decorate(db,config,catalog)
+    import dependency_catalog
+    catalog['dependency_catalog']=dependency_catalog.listing(catalog)
+    return catalog
 
 
 def check_requirements(manifest,profile):

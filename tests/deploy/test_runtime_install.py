@@ -56,6 +56,16 @@ class RuntimeInstallTests(unittest.TestCase):
         self.assertEqual(command[command.index('--network')+1],'none')
         self.assertFalse(runtime.runtime_store.validation_fenced(self.executor))
 
+    def test_dependency_display_classification_survives_install_and_invalid_values_fail(self):
+        self.recipe['dependencies'][0].update(catalog=True,category='simulation');self.save()
+        runtime.install(self.installation,self.executor,'alpha',self.source,self.docker)
+        dep=runtime.runtime_store.listing(self.executor,self.config,'alpha')['runtimes'][0]['manifest']['dependencies'][0]
+        self.assertEqual((dep['catalog'],dep['category']),(True,'simulation'))
+        self.recipe['dependencies'][0]['category']='arbitrary';self.save()
+        with self.assertRaisesRegex(ValueError,'category'):runtime.recipe(self.source)
+        self.recipe['dependencies'][0].update(category='libraries',catalog='yes');self.save()
+        with self.assertRaisesRegex(ValueError,'boolean'):runtime.recipe(self.source)
+
     def test_missing_mismatching_or_redirected_root_never_falls_back(self):
         (self.installation/'config/installation-plan.json').unlink()
         with self.assertRaisesRegex(ValueError,'Configure'):runtime.settings(self.installation,self.executor,'alpha')

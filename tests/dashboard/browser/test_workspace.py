@@ -112,6 +112,58 @@ const done=arguments[arguments.length-1];
         self.assertTrue(self.ui.js("return document.querySelector('.pa-pane-body').textContent.includes('planner.py')"))
         self.assertFalse(self.ui.js("return !!window.toolInjected"))
 
+    def test_dependency_categories_versions_origins_runtime_links_and_responsive_layout(self):
+        ui=self.ui
+        ref={'id':'python-image','revision':1,'entity':'runtime:python-image:1','label':'Python Runtime','current':True,'scope':'image'}
+        runtime={'id':ref['entity'],'kind':'runtime','label':ref['label'],'namespace':'loom','properties':{},'relations':[],'artifacts':[],
+            'loom_runtime':{'id':ref['id'],'revision':1,'legacy':False,'manifest':{'label':ref['label'],'runtime':{'image':'sha256:'+'a'*64},'dependencies':[],'validation':{'status':'passed'}},'used_by_profiles':[],'used_by_jobs':[]}}
+        unit={'id':'dependency-python','name':'python','label':'Python','category':'languages','runtimes':[ref],
+              'versions':[{'version':version,'installations':[{'origin':origin,'runtimes':[ref]}]} for version,origin in
+                  [('3.11',{'type':'managed-directory','path':'/chosen/dependencies/'+('long-path/'*12)+'<img src=x onerror="window.dependencyInjected=true">'}),
+                   ('3.12',{'type':'image','image':'sha256:'+'a'*64})]]}
+        simulation={**unit,'id':'dependency-isaacsim','name':'isaacsim','label':'Isaac Sim','category':'simulation','versions':[{'version':'6.0.1','installations':[]}]}
+        for value in (unit,simulation):
+            self.api.fixture['catalog']['entities'].append({'id':'dependency:'+value['id'],'kind':'dependency','label':value['label'],'namespace':'loom','loom_dependency':value,'properties':{},'relations':[],'artifacts':[]})
+        self.api.fixture['catalog']['entities'].append(runtime)
+        self.api.fixture['catalog']['revision']='dependency-catalog';ui.js("parent.postMessage({type:'pai-catalog-refresh'},'*')")
+        ui.wait("return document.querySelector('[data-sync-control]').textContent.includes('dependency-catalog')")
+        ui.nav('Dependencies')
+        self.assertEqual(ui.js("return document.querySelectorAll('[data-dependency-card]').length"),2)
+        self.assertLessEqual(ui.js("return new Set([...document.querySelectorAll('[data-dependency-category]')].map(e=>Math.round(e.getBoundingClientRect().top))).size"),2)
+        ui.top();self.wd('/window/rect',{'width':500,'height':1000});ui.frame()
+        self.assertTrue(ui.js("return document.querySelector('.pa-pane-body').scrollWidth<=document.querySelector('.pa-pane-body').clientWidth+1"))
+        ui.top();self.wd('/window/rect',{'width':1440,'height':1000});ui.frame()
+        self.assertEqual(ui.js("return document.querySelectorAll('[data-dependency-card=dependency-python] .pa-dependency-versions span').length"),2)
+        ui.click('[data-dependency-category=simulation]')
+        self.assertEqual(ui.js("return document.querySelectorAll('[data-dependency-card]').length"),1)
+        self.assertTrue(ui.js("return !!document.querySelector('[data-dependency-card=dependency-isaacsim]')"))
+        ui.click('[data-dependency-category=""]')
+        ui.js("const e=document.querySelector('[data-dependency-query]');e.value='3.11';e.dispatchEvent(new Event('input',{bubbles:true}))")
+        self.assertEqual(ui.js("return document.querySelectorAll('[data-dependency-card]').length"),1)
+        if os.environ.get('LOOM_TEST_SCREENSHOTS'):
+            path=Path(os.environ['LOOM_TEST_SCREENSHOTS']);path.mkdir(parents=True,exist_ok=True)
+            (path/'dependencies-list.png').write_bytes(base64.b64decode(self.wd('/screenshot')))
+        ui.click('[data-entity="dependency:dependency-python"]')
+        ui.wait("return !!document.querySelector('[data-dependency-home]')")
+        self.assertNotIn('Unassigned',ui.js("return document.querySelector('.pa-pane-body').textContent"))
+        self.assertIn('/chosen/dependencies/',ui.js("return document.querySelector('.pa-pane-body').textContent"))
+        self.assertFalse(ui.js("return !!window.dependencyInjected || !!document.querySelector('.pa-dependency-installation img')"))
+        for width in (1440,500):
+            ui.top();self.wd('/window/rect',{'width':width,'height':1000});ui.frame()
+            for theme in ('light','dark'):
+                ui.click('[data-theme='+theme+']')
+                self.assertTrue(ui.js("return document.querySelector('.pa-pane-body').scrollWidth<=document.querySelector('.pa-pane-body').clientWidth+1"))
+                if os.environ.get('LOOM_TEST_SCREENSHOTS'):
+                    path=Path(os.environ['LOOM_TEST_SCREENSHOTS']);path.mkdir(parents=True,exist_ok=True)
+                    (path/('dependencies-'+str(width)+'-'+theme+'.png')).write_bytes(base64.b64decode(self.wd('/screenshot')))
+        ui.click('[data-entity="runtime:python-image:1"]')
+        ui.wait("return !!document.querySelector('[data-runtime-inventory]')")
+        self.api.fixture['catalog']['runtime_catalog']={'status':'unavailable','runtimes':[]}
+        self.api.fixture['catalog']['revision']='dependency-unavailable';ui.js("parent.postMessage({type:'pai-catalog-refresh'},'*')")
+        ui.wait("return document.querySelector('[data-sync-control]').textContent.includes('dependency-unavailable')")
+        ui.nav('Dependencies');ui.wait("return document.querySelector('[role=alert]')?.textContent==='Runtime catalog unavailable'")
+        self.assertFalse(self.api.actions)
+
     def test_runtime_inventory_exact_dependencies_consumers_and_narrow_layout(self):
         item={'id':'simulation','revision':2,'sha256':'a'*64,'legacy':False,
             'manifest':{'label':'Simulation 6','runtime':{'image':'sha256:'+'b'*64,'network':'none'},
@@ -964,12 +1016,16 @@ const done=arguments[arguments.length-1];
 
     def test_activity_years_follow_january_and_change_at_edges(self):
         ui=self.ui
+        # A bounded calendar viewport leaves a January safely inside the two-year
+        # track in every month, without testing a detached label after edge paging.
+        ui.js("const s=document.createElement('style');s.textContent='#pai-studio .pa-activity-graph{width:320px!important}';document.head.append(s)")
+        ui.wait("return document.querySelector('.pa-activity-graph').clientWidth===320")
         ui.wait("return document.querySelectorAll('.pa-activity-year').length>=2")
         ui.js("window.graph=document.querySelector('.pa-activity-graph');window.firstStart=graph.dataset.activityStart;graph.scrollLeft=graph.scrollWidth")
         ui.wait("return graph.dataset.activityStart!==firstStart")
         ui.js("""const weeks=graph.querySelectorAll('.pa-activity-week');
         window.pitch=weeks[1].offsetLeft-weeks[0].offsetLeft;
-        window.yearLabel=[...graph.querySelectorAll('.pa-activity-year')].find(y=>Number(y.dataset.start)*pitch>graph.clientWidth/2+100 && Number(y.dataset.start)*pitch<graph.scrollWidth-graph.clientWidth-100);
+        window.yearLabel=[...graph.querySelectorAll('.pa-activity-year')].find(y=>Number(y.dataset.start)*pitch>graph.clientWidth+100 && Number(y.dataset.start)*pitch<graph.scrollWidth-graph.clientWidth-100);
         window.boundary=Number(yearLabel.dataset.start)*pitch;
         graph.scrollLeft=boundary-graph.clientWidth/2;""")
         ui.wait("return Math.abs(yearLabel.getBoundingClientRect().left-graph.getBoundingClientRect().left-graph.clientWidth/2)<2")
@@ -986,7 +1042,9 @@ const done=arguments[arguments.length-1];
         ui.wait("return yearLabel.hidden&&pinnedYear.textContent===yearLabel.textContent")
         # Reverse scrolling restores the previous year while January follows natively.
         ui.js("graph.scrollLeft=boundary-graph.clientWidth+10")
-        ui.wait("return !yearLabel.hidden&&Math.abs(yearLabel.getBoundingClientRect().right-graph.getBoundingClientRect().right)<2")
+        # The upcoming January keeps its native offset, including a clipped
+        # right edge; only the previous year's label is pinned to the left.
+        ui.wait("return !yearLabel.hidden&&Math.abs(yearLabel.getBoundingClientRect().left-graph.getBoundingClientRect().left-(boundary-graph.scrollLeft))<2")
         self.assertTrue(ui.js("return Number(pinnedYear.textContent)<Number(yearLabel.dataset.year)"))
 
     def test_card_surfaces_prepared_before_vertical_scroll(self):

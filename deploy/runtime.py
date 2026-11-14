@@ -84,7 +84,7 @@ def recipe(source):
     names=set()
     if not isinstance(definition.get('dependencies',[]),list):raise ValueError('Dependencies must be an array')
     for dep in definition.get('dependencies',[]):
-        if not isinstance(dep,dict) or set(dep)-{'name','version','kind','url','sha256','archive'} or not runtime_store.ID.fullmatch(dep.get('name','')) or not isinstance(dep.get('version'),str) or not dep['version']:
+        if not isinstance(dep,dict) or set(dep)-{'name','version','kind','url','sha256','archive','catalog','category'} or not runtime_store.ID.fullmatch(dep.get('name','')) or not isinstance(dep.get('version'),str) or not dep['version']:
             raise ValueError('Dependencies require unique names and exact version strings')
         if dep['name'] in names:raise ValueError('Duplicate dependency name')
         names.add(dep['name'])

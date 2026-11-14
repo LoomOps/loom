@@ -128,3 +128,24 @@ class RuntimeCatalogTests(IsolatedOps):
         listing=runtime_store.listing(self.catalog,config,'alpha',image_identity=lambda _:observed['runtime']['image'])
         self.assertTrue(any(i.get('legacy') and i['id']=='python' for i in listing['runtimes']))
         self.assertIsNone(runtime_catalog.observed_environment({'runtime_id':'python'},listing))
+
+    def test_dependency_reader_discovery_detail_projection_and_instance_grants(self):
+        self.manifest['dependencies']=[{'name':'Python','version':'3.12','scope':'image'}]
+        runtime_store.register(self.catalog,'python-unit',self.manifest,['alpha'])
+        before=(self.catalog/'runtimes.sqlite3').read_bytes()
+        with patch('runtime_client.call',side_effect=self.host_call):
+            result=ops.operate('components',{'action':'dependencies','arguments':{}},self.reader,self.config)
+            self.assertEqual(len(result['dependencies']),1)
+            unit=result['dependencies'][0]
+            detail=ops.operate('components',{'action':'get_dependency','arguments':{'id':unit['id']}},self.reader,self.config)
+            self.assertEqual(detail['versions'][0]['version'],'3.12')
+            import dashboard_read
+            with ops.db() as c:
+                projected,_=dashboard_read.projection(c,self.reader,self.config,self.local)
+            self.assertTrue(any(e.get('loom_dependency') for e in projected['entities']))
+        with patch('runtime_client.call',return_value={'runtimes':[]}):
+            denied=ops.operate('components',{'action':'dependencies','arguments':{}},self.reader,self.config)
+            self.assertEqual(denied['dependencies'],[])
+            with self.assertRaisesRegex(ValueError,'outside instance grant'):
+                ops.operate('components',{'action':'get_dependency','arguments':{'id':unit['id']}},self.reader,self.config)
+        self.assertEqual((self.catalog/'runtimes.sqlite3').read_bytes(),before)

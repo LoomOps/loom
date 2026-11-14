@@ -4,13 +4,14 @@ const loomExtensionTypes={
  execution_profile:{label:'Profile',icon:'workflow',role:'Execution combination',description:''},
  component:{label:'Component',icon:'blocks',role:'Job lifecycle',description:''},
  tool:{label:'Tool',icon:loomToolIcon,role:'Research software',description:''},
- runtime:{label:'Runtime',icon:loomRuntimeIcon,role:'Runtime',description:''}
+ runtime:{label:'Runtime',icon:loomRuntimeIcon,role:'Runtime',description:''},
+ dependency:{label:'Dependency',icon:'package',role:'Dependency',description:''}
 };
-const loomHubPages={profiles:'Profiles',components:'Components',tools:'Tools',runtimes:'Runtimes'};
+const loomHubPages={profiles:'Profiles',components:'Components',tools:'Tools',runtimes:'Runtimes',dependencies:'Dependencies'};
 function loomIsHubPage(page){return Object.hasOwn(loomHubPages,page);}
 function loomHubTabs(){
  const context=state.hubContext&&catEntity(state.hubContext),p=context?.loom_execution_profile;
- return `<nav class="pa-hub-tabs" aria-label="Runtimes">${Object.entries(loomHubPages).map(([page,label])=>`<button data-hub-page="${page}" aria-current="${state.page===page?'page':'false'}">${icon(({profiles:'workflow',components:'blocks',tools:loomToolIcon,runtimes:loomRuntimeIcon})[page])}${label}</button>`).join('')}</nav>`+(p&&state.entity!==context.id?`<div class="pa-hub-context">${catLink(context.id,loomProfileName(p))}<span>› ${esc(loomHubPages[state.page])}</span></div>`:'');
+ return `<nav class="pa-hub-tabs" aria-label="Runtimes">${Object.entries(loomHubPages).map(([page,label])=>`<button data-hub-page="${page}" aria-current="${state.page===page?'page':'false'}">${icon(({profiles:'workflow',components:'blocks',tools:loomToolIcon,runtimes:loomRuntimeIcon,dependencies:'package'})[page])}${label}</button>`).join('')}</nav>`+(p&&state.entity!==context.id?`<div class="pa-hub-context">${catLink(context.id,loomProfileName(p))}<span>› ${esc(loomHubPages[state.page])}</span></div>`:'');
 }
 function loomHubNavigate(next){
  const pane=activePane(),tab=activeTab(),current=catEntity(state.entity);
@@ -32,7 +33,7 @@ function loomHubHighlights(env){
  // Old API fixtures may have only a single declared dependency. Large raw
  // inventories never become a substitute for curated representative entries.
  if(!deps)deps=(env.dependencies?.length<=8?env.dependencies:[])||[];
- return [...new Map(deps.map(d=>[d.name.toLowerCase()+':'+d.version,d])).values()].map(d=>`<span class="pa-profile-dependency" title="${esc(d.scope||'')}">${esc(({'isaacsim':'Isaac Sim','isaaclab':'Isaac Lab','isaac-python':'Kit Python','torch':'PyTorch','lerobot':'LeRobot','python':'Python'})[d.name.toLowerCase()]||d.name)} <b>${esc(d.version.split('+release.')[0])}</b></span>`).join('');
+ return [...new Map(deps.map(d=>[d.name.toLowerCase()+':'+d.version,d])).values()].map(d=>{const label=({'isaacsim':'Isaac Sim','isaaclab':'Isaac Lab','isaac-python':'Kit Python','torch':'PyTorch','lerobot':'LeRobot','python':'Python'})[d.name.toLowerCase()]||d.name,entity=(catalogData.all_entities||catalogData.entities).find(e=>e.loom_dependency?.name===d.name.trim().toLowerCase().replace(/[-_.]+/g,'-'));return `<span class="pa-profile-dependency" title="${esc(d.scope||'')}">${entity?catLink(entity.id,label):esc(label)} <b>${esc(d.version.split('+release.')[0])}</b></span>`;}).join('');
 }
 function loomHubIO(p){
  const input=Object.keys(p.inputs||{}),output=Object.entries(p.outputs||{}).map(([key,kind])=>key===kind?kind:key+' · '+kind);
@@ -275,7 +276,7 @@ render=function(){
   const legacy=({component:'components',runtime:'runtimes',execution_profile:'profiles'})[tab.view.extensionKind];
   if(!tab.view.entity&&tab.view.page==='tools'&&legacy){const previous=tab.id;tab.view.page=legacy;delete tab.view.extensionKind;tab.id=tabKey(tab.view);if(pane.active===previous)pane.active=tab.id;}
   if(catEntity(tab.view.entity)?.kind==='execution_profile')tab.view.page='profiles';
-  else if(/^(tool|component):[^:]+:[^:]+:r\d+$/.test(tab.view.entity||'')||['tool','component','runtime'].includes(catEntity(tab.view.entity)?.kind))tab.view.page=({component:'components',runtime:'runtimes',tool:'tools'})[catEntity(tab.view.entity)?.kind]||'tools';
+  else if(/^(tool|component):[^:]+:[^:]+:r\d+$/.test(tab.view.entity||'')||['tool','component','runtime','dependency'].includes(catEntity(tab.view.entity)?.kind))tab.view.page=({component:'components',runtime:'runtimes',tool:'tools',dependency:'dependencies'})[catEntity(tab.view.entity)?.kind]||'tools';
  }
  return loomSoftwareRender();
 };
